@@ -16,15 +16,17 @@ const server = http.createServer((req, res) => {
   }
 
   if (req.method === 'POST' && req.url === '/api/chat') {
-    let body = '';
-    req.on('data', chunk => body += chunk);
+    const chunks = [];
+    req.on('data', chunk => chunks.push(chunk));
     req.on('end', () => {
+      const body = Buffer.concat(chunks);
       const options = {
         hostname: 'api.anthropic.com',
         path: '/v1/messages',
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Content-Length': body.length,
           'x-api-key': ANTHROPIC_API_KEY,
           'anthropic-version': '2023-06-01'
         }
