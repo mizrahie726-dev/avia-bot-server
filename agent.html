@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>אביה | לוח בקרה</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g1:#0f2d1a;--g2:#1a4a2e;--g3:#2d7a4f;--g4:#4caf76;--g5:#e8f5ee;
+  --text:#111827;--gray:#6b7280;--border:#e5ede8;--bg:#f4f7f5;
+  --new:#2563eb;--new-bg:#eff6ff;
+  --contact:#d97706;--contact-bg:#fffbeb;
+  --done:#16a34a;--done-bg:#f0fdf4;
+  --lost:#dc2626;--lost-bg:#fef2f2;
+}
+body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ══ LOGIN ══ */
+#login{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1a4a2e,#2d7a4f)}
+.login-box{background:white;border-radius:20px;padding:40px 36px;width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.login-logo{font-size:48px;margin-bottom:12px}
+.login-box h2{font-size:1.4rem;font-weight:700;color:var(--g2);margin-bottom:4px}
+.login-box p{color:var(--gray);font-size:.9rem;margin-bottom:24px}
+.login-box input{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:12px 16px;font-size:16px;font-family:'Heebo',sans-serif;outline:none;margin-bottom:12px;text-align:center;transition:border-color .2s}
+.login-box input:focus{border-color:var(--g3)}
+.login-btn{width:100%;background:linear-gradient(135deg,var(--g3),var(--g2));color:white;border:none;border-radius:10px;padding:13px;font-size:1rem;font-family:'Heebo',sans-serif;font-weight:700;cursor:pointer;transition:opacity .2s}
+.login-btn:hover{opacity:.9}
+.login-err{color:#dc2626;font-size:.85rem;margin-top:8px;display:none}
+
+/* ══ APP ══ */
+#app{display:none;flex-direction:column;min-height:100vh}
+
+/* ── Header ── */
+.header{background:linear-gradient(135deg,var(--g2),var(--g3));padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;position:sticky;top:0;z-index:50}
+.header-logo{font-size:1.05rem;font-weight:800;color:white;display:flex;align-items:center;gap:8px}
+.header-logo span{opacity:.7;font-weight:400;font-size:.85rem}
+.header-right{display:flex;gap:10px}
+.hbtn{background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);color:white;border-radius:8px;padding:7px 14px;font-family:'Heebo',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:background .2s}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.hbtn.active{background:rgba(255,255,255,.3)}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:14px 16px;background:white;border-bottom:1px solid var(--border)}
+.stat{text-align:center;padding:10px 6px;border-radius:10px;cursor:pointer;transition:background .15s}
+.stat:hover{background:var(--bg)}
+.stat.active{background:var(--g5)}
+.stat-num{font-size:1.6rem;font-weight:800;line-height:1;color:var(--g2)}
+.stat-lbl{font-size:.7rem;color:var(--gray);margin-top:3px;font-weight:500}
+.stat.s-new .stat-num{color:var(--new)}
+.stat.s-contact .stat-num{color:var(--contact)}
+.stat.s-done .stat-num{color:var(--done)}
+.stat.s-lost .stat-num{color:var(--lost)}
+
+/* ── Search ── */
+.search-bar{padding:10px 16px;background:white;border-bottom:1px solid var(--border);display:flex;gap:8px}
+.search-inp{flex:1;border:1.5px solid var(--border);border-radius:50px;padding:8px 16px;font-size:.9rem;font-family:'Heebo',sans-serif;outline:none;background:var(--bg);transition:border-color .2s}
+.search-inp:focus{border-color:var(--g3);background:white}
+.refresh-btn{background:var(--g5);border:1.5px solid var(--border);color:var(--g3);border-radius:50px;padding:8px 14px;font-family:'Heebo',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* ── Lead list ── */
+.leads-list{padding:10px 12px;display:flex;flex-direction:column;gap:8px;flex:1}
+.lead-card{background:white;border-radius:14px;padding:14px 16px;border:1.5px solid var(--border);cursor:pointer;transition:all .18s;position:relative}
+.lead-card:hover{border-color:var(--g4);box-shadow:0 3px 12px rgba(45,122,79,.12);transform:translateY(-1px)}
+.lead-card.selected{border-color:var(--g3);box-shadow:0 3px 16px rgba(45,122,79,.2)}
+.lc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.lc-name{font-size:1rem;font-weight:700;color:var(--text)}
+.lc-badge{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:50px;white-space:nowrap}
+.badge-new{background:var(--new-bg);color:var(--new)}
+.badge-contact{background:var(--contact-bg);color:var(--contact)}
+.badge-done{background:var(--done-bg);color:var(--done)}
+.badge-lost{background:var(--lost-bg);color:var(--lost)}
+.lc-mid{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.82rem;color:var(--gray)}
+.lc-pest{background:var(--g5);color:var(--g2);padding:2px 8px;border-radius:20px;font-weight:600;font-size:.78rem}
+.lc-actions{display:flex;gap:6px;margin-top:10px}
+.lc-btn{flex:1;border:none;border-radius:8px;padding:8px;font-family:'Heebo',sans-serif;font-size:.8rem;font-weight:600;cursor:pointer;transition:all .15s;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px}
+.btn-call{background:#eff6ff;color:#1d4ed8}
+.btn-call:hover{background:#dbeafe}
+.btn-wa{background:#f0fdf4;color:#15803d}
+.btn-wa:hover{background:#dcfce7}
+.btn-status{background:var(--bg);color:var(--gray)}
+.btn-status:hover{background:var(--g5);color:var(--g2)}
+.lc-time{font-size:.78rem;color:var(--gray);margin-top:4px}
+.lc-notes{font-size:.8rem;color:var(--gray);background:var(--bg);padding:6px 10px;border-radius:8px;margin-top:8px;display:none}
+.lc-notes.has-notes{display:block}
+.empty-state{text-align:center;padding:60px 20px;color:var(--gray)}
+.empty-state div{font-size:3rem;margin-bottom:12px}
+
+/* ══ DETAIL MODAL ══ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;display:none;align-items:flex-end}
+.modal-overlay.open{display:flex}
+.modal-sheet{background:white;border-radius:20px 20px 0 0;width:100%;max-height:92vh;overflow-y:auto;padding:0 0 30px}
+.modal-handle{width:40px;height:4px;background:#ddd;border-radius:4px;margin:12px auto 0}
+.modal-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-name{font-size:1.2rem;font-weight:800}
+.modal-close{background:var(--bg);border:none;border-radius:50%;width:34px;height:34px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.modal-body{padding:16px 20px}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f3f4f6}
+.detail-row:last-child{border-bottom:none}
+.dr-label{color:var(--gray);font-size:.85rem}
+.dr-value{font-weight:600;font-size:.9rem;text-align:left}
+.status-select{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.9rem;font-family:'Heebo',sans-serif;outline:none;margin-top:10px;background:white;cursor:pointer}
+.notes-area{width:100%;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.9rem;font-family:'Heebo',sans-serif;outline:none;margin-top:8px;resize:vertical;min-height:80px;transition:border-color .2s}
+.notes-area:focus{border-color:var(--g3)}
+.save-btn{width:100%;background:linear-gradient(135deg,var(--g3),var(--g2));color:white;border:none;border-radius:10px;padding:12px;font-family:'Heebo',sans-serif;font-size:1rem;font-weight:700;cursor:pointer;margin-top:10px;transition:opacity .2s}
+.save-btn:hover{opacity:.9}
+.prep-box{background:var(--g5);border-radius:12px;padding:14px;margin-top:14px;font-size:.82rem;line-height:1.7;color:var(--g1);white-space:pre-line}
+.prep-title{font-weight:700;font-size:.85rem;color:var(--g2);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.modal-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.mac-btn{border:none;border-radius:12px;padding:13px;font-family:'Heebo',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;transition:opacity .2s}
+.mac-btn:hover{opacity:.88}
+.mac-call{background:#eff6ff;color:#1d4ed8}
+.mac-wa{background:#f0fdf4;color:#15803d}
+.mac-price{background:var(--g5);color:var(--g2);grid-column:span 2}
+
+/* ══ AI CHAT ══ */
+.ai-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end}
+.ai-overlay.open{display:flex}
+.ai-panel{background:white;border-radius:20px 20px 0 0;width:100%;height:85vh;display:flex;flex-direction:column}
+.ai-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ai-title{font-size:1rem;font-weight:700;display:flex;align-items:center;gap:8px}
+.ai-title-dot{width:8px;height:8px;background:#4caf76;border-radius:50%;box-shadow:0 0 6px #4caf76}
+.ai-close{background:var(--bg);border:none;border-radius:50%;width:32px;height:32px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ai-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ai-msg{max-width:88%;padding:10px 14px;border-radius:16px;font-size:.88rem;line-height:1.65;white-space:pre-line}
+.ai-msg.bot{background:var(--g5);color:var(--g1);align-self:flex-start;border-bottom-right-radius:4px}
+.ai-msg.user{background:linear-gradient(135deg,var(--g3),var(--g2));color:white;align-self:flex-end;border-bottom-left-radius:4px}
+.ai-msg.loading{background:var(--g5);color:var(--gray)}
+.ai-suggestions{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.ai-sug{background:var(--g5);border:1.5px solid var(--border);color:var(--g2);border-radius:20px;padding:7px 13px;font-size:.8rem;font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Heebo',sans-serif;transition:background .15s}
+.ai-sug:hover{background:#d4eedd}
+.ai-input-row{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--border);flex-shrink:0}
+.ai-inp{flex:1;border:1.5px solid var(--border);border-radius:50px;padding:10px 16px;font-size:.95rem;font-family:'Heebo',sans-serif;outline:none;background:var(--bg);transition:all .2s}
+.ai-inp:focus{border-color:var(--g3);background:white}
+.ai-send{width:40px;height:40px;background:linear-gradient(135deg,var(--g3),var(--g2));border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .18s;box-shadow:0 2px 8px rgba(26,74,46,.3)}
+.ai-send:hover{box-shadow:0 4px 14px rgba(26,74,46,.4)}
+.ai-send svg{width:15px;height:15px;fill:white}
+
+/* ══ FAB ══ */
+.fab{position:fixed;bottom:24px;left:24px;width:56px;height:56px;background:linear-gradient(135deg,var(--g3),var(--g2));border:none;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(26,74,46,.4);z-index:90;transition:all .2s;font-size:1.4rem}
+.fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(26,74,46,.5)}
+.fab-label{position:absolute;bottom:-18px;font-size:.65rem;color:var(--g2);font-weight:700;white-space:nowrap}
+
+@media(min-width:680px){
+  .stats{grid-template-columns:repeat(5,1fr)}
+  .modal-sheet,.ai-panel{max-width:520px;margin:auto auto 0;border-radius:20px 20px 0 0}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="login">
+  <div class="login-box">
+    <div class="login-logo">🪲</div>
+    <h2>אביה הדברות</h2>
+    <p>לוח הבקרה של שלומי</p>
+    <input type="password" id="pw-input" placeholder="סיסמה" autocomplete="off">
+    <button class="login-btn" onclick="doLogin()">כניסה</button>
+    <div class="login-err" id="login-err">סיסמה שגויה, נסה שוב</div>
+  </div>
+</div>
+
+<!-- ══ MAIN APP ══ -->
+<div id="app">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-logo">🪲 אביה הדברות <span>לוח בקרה</span></div>
+    <div class="header-right">
+      <button class="hbtn active" id="btn-leads" onclick="showView('leads')">לידים</button>
+      <button class="hbtn" id="btn-stats-v" onclick="showView('statsview')">סטטיסטיקה</button>
+    </div>
+  </div>
+
+  <!-- Stats bar -->
+  <div class="stats">
+    <div class="stat" onclick="filterBy('all')">
+      <div class="stat-num" id="cnt-all">0</div>
+      <div class="stat-lbl">סה"כ</div>
+    </div>
+    <div class="stat s-new" onclick="filterBy('new')">
+      <div class="stat-num" id="cnt-new">0</div>
+      <div class="stat-lbl">חדשים</div>
+    </div>
+    <div class="stat s-contact" onclick="filterBy('contact')">
+      <div class="stat-num" id="cnt-contact">0</div>
+      <div class="stat-lbl">שוחח</div>
+    </div>
+    <div class="stat s-done" onclick="filterBy('done')">
+      <div class="stat-num" id="cnt-done">0</div>
+      <div class="stat-lbl">בוצע</div>
+    </div>
+    <div class="stat s-lost" onclick="filterBy('lost')">
+      <div class="stat-num" id="cnt-lost">0</div>
+      <div class="stat-lbl">לא רלוונטי</div>
+    </div>
+  </div>
+
+  <!-- Search -->
+  <div class="search-bar">
+    <input class="search-inp" id="search" placeholder="🔍 חיפוש לפי שם, טלפון, מזיק..." oninput="renderLeads()">
+    <button class="refresh-btn" onclick="loadLeads()">⟳ רענן</button>
+  </div>
+
+  <!-- Leads -->
+  <div class="leads-list" id="leads-list"></div>
+
+  <!-- FAB: AI -->
+  <button class="fab" onclick="openAI()">🤖<div class="fab-label">שאל AI</div></button>
+</div>
+
+<!-- ══ LEAD DETAIL MODAL ══ -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-sheet" id="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div>
+        <div class="modal-name" id="m-name">—</div>
+        <div style="color:var(--gray);font-size:.82rem;margin-top:2px" id="m-time">—</div>
+      </div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="detail-row"><span class="dr-label">📞 טלפון</span><span class="dr-value" id="m-phone">—</span></div>
+      <div class="detail-row"><span class="dr-label">🪲 מזיק</span><span class="dr-value" id="m-pest">—</span></div>
+      <div class="detail-row"><span class="dr-label">🏠 נכס</span><span class="dr-value" id="m-property">—</span></div>
+      <div class="detail-row" id="m-pets-row" style="display:none"><span class="dr-label">🐾 חיות</span><span class="dr-value" id="m-pets">—</span></div>
+      <div class="detail-row" id="m-children-row" style="display:none"><span class="dr-label">👶 ילדים</span><span class="dr-value" id="m-children">—</span></div>
+      <div class="detail-row" id="m-rec-row" style="display:none"><span class="dr-label">🔄 היסטוריה</span><span class="dr-value" id="m-rec">—</span></div>
+      <div class="detail-row"><span class="dr-label">📅 נרשם</span><span class="dr-value" id="m-date">—</span></div>
+
+      <!-- Actions -->
+      <div class="modal-actions" style="margin-top:14px">
+        <a class="mac-btn mac-call" id="m-call-btn" href="#">📞 התקשר</a>
+        <a class="mac-btn mac-wa" id="m-wa-btn" href="#" target="_blank">📲 WhatsApp</a>
+      </div>
+
+      <!-- Prep instructions -->
+      <div id="m-prep-wrap" style="display:none">
+        <div class="prep-box">
+          <div class="prep-title">📋 הנחיות הכנה ללקוח</div>
+          <div id="m-prep-text"></div>
+        </div>
+      </div>
+
+      <!-- Status + Notes -->
+      <div style="margin-top:16px;font-weight:700;font-size:.9rem;color:var(--g2)">עדכון סטטוס</div>
+      <select class="status-select" id="m-status">
+        <option value="new">🔵 חדש — טרם יצרתי קשר</option>
+        <option value="contact">🟡 יצרתי קשר</option>
+        <option value="done">🟢 בוצע ✓</option>
+        <option value="lost">🔴 לא רלוונטי</option>
+      </select>
+
+      <div style="margin-top:12px;font-weight:700;font-size:.9rem;color:var(--g2)">הערות</div>
+      <textarea class="notes-area" id="m-notes" placeholder="הערות אישיות, מחיר שסוכם, תאריך ביקור..."></textarea>
+
+      <button class="save-btn" onclick="saveLead()">💾 שמור שינויים</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AI CHAT PANEL ══ -->
+<div class="ai-overlay" id="ai-overlay" onclick="closeAI(event)">
+  <div class="ai-panel" onclick="e=>e.stopPropagation()">
+    <div class="ai-header">
+      <div class="ai-title"><div class="ai-title-dot"></div>עוזר AI של שלומי</div>
+      <button class="ai-close" onclick="closeAIDirect()">✕</button>
+    </div>
+    <div class="ai-msgs" id="ai-msgs">
+      <div class="ai-msg bot">שלום שלומי! 👋 אני מחובר לכל הלידים שלך ויכול לעזור לך לנהל אותם.
+
+שאל אותי כל דבר — מי לא יצרת קשר, מה קרה השבוע, צור הודעת מעקב, ועוד.</div>
+    </div>
+    <div class="ai-suggestions">
+      <button class="ai-sug" onclick="aiSend('מי הלידים שעדיין לא יצרתי קשר?')">מי לא יצרתי קשר?</button>
+      <button class="ai-sug" onclick="aiSend('מה הפגישות של השבוע הקרוב?')">פגישות השבוע</button>
+      <button class="ai-sug" onclick="aiSend('תן לי סיכום עסקי: אחוז סגירה, מזיקים נפוצים, ממוצע ערך עסקה')">סיכום עסקי</button>
+      <button class="ai-sug" onclick="aiSend('איזה לידים כדאי שאתקשר אליהם היום?')">מה עדיפות היום?</button>
+    </div>
+    <div class="ai-input-row">
+      <input class="ai-inp" id="ai-inp" placeholder="שאל אותי כל דבר על הלידים שלך..." autocomplete="off">
+      <button class="ai-send" onclick="aiSend()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SERVER = window.location.origin;
+let agentKey = '';
+let allLeads = [];
+let currentFilter = 'all';
+let selectedLead = null;
+let aiHistory = [];
+
+const PREP = {
+  "ג'וקים": "לפני הטיפול:\n• פנה ארונות מתחת לכיור ובמטבח\n• הוצא כלים ומזון לשקיות אטומות\n• פנה מתחת למקרר ולתנור\n\nאחרי הטיפול:\n• אוורר 2–3 שעות לפני שתחזרו\n• אל תנקה אזורי ריסוס לפחות שבועיים",
+  "עכברים / חולדות": "לפני הטיפול:\n• אחסן מזון בכלים אטומים\n• פנה פינות עמוסות\n• רוקן פח האשפה\n\nאחרי הטיפול:\n• לא צריך לצאת מהבית\n• בדוק תחנות אחת לשבוע",
+  "פשפש מיטה": "לפני הטיפול:\n• כבס מצעים ב-60°+\n• פנה ארון הצמוד למיטה\n• ❗ אל תזיז מזרן לחדר אחר\n\nאחרי הטיפול:\n• צא מהבית 3–4 שעות\n• אל תנקה שבוע לפחות",
+  "נמלים": "לפני הטיפול:\n• נקה פירורים ומזון פתוח לחלוטין\n• הכנס מזון לשקיות אטומות\n\nאחרי הטיפול:\n• צא כשעתיים\n• אל תנקה אזורי ריסוס שבוע לפחות",
+  "נמלת אש": "לפני הטיפול:\n• אל תשקה גינה 24 שעות לפני\n• הרחק ילדים וחיות מחמד מהשטח\n\nאחרי הטיפול:\n• אל תשקה 48 שעות\n• הרחק ילדים 2–3 שעות",
+  "יתושים": "לפני הטיפול:\n• רוקן כל מיכל עם מים עומדים\n• גזום צמחייה גבוהה\n\nאחרי הטיפול:\n• הרחק מהגינה שעה–שעתיים\n• שמור על ניקוז תקין",
+  "יונים": "לפני ההתקנה:\n• נקה שאריות צואה וקן מהמרפסת\n• הרחק חפצים מאזור ההתקנה\n\nאחרי ההתקנה:\n• הרשת עמידה, אין צורך בתחזוקה שוטפת",
+  "צרעות": "לפני הטיפול:\n• ❗ אל תתקרב לקן לבד\n• סגור חלונות ודלתות בזמן הטיפול\n\nאחרי הטיפול:\n• הישאר מהאזור 2–3 שעות",
+  "פרעושים / קרציות": "לפני הטיפול:\n• קח חיית מחמד לוטרינר לטיפול מקביל — חובה!\n• שאב אבק יסודי בכל הבית\n• כבס מצעי חיית המחמד בחום גבוה\n\nאחרי הטיפול:\n• צא מהבית 4–5 שעות\n• אל תשאב אבק שבוע לאחר"
+};
+
+const STATUS_LABELS = {
+  new: { text: 'חדש', cls: 'badge-new' },
+  contact: { text: 'שוחח', cls: 'badge-contact' },
+  done: { text: 'בוצע ✓', cls: 'badge-done' },
+  lost: { text: 'לא רלוונטי', cls: 'badge-lost' }
+};
+
+// ── Login ──
+document.getElementById('pw-input').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+
+function doLogin(){
+  const pw = document.getElementById('pw-input').value.trim();
+  if(!pw){ return; }
+  agentKey = pw;
+  loadLeads();
+}
+
+// ── Load leads ──
+async function loadLeads(){
+  try{
+    const r = await fetch(SERVER + '/api/leads?key=' + encodeURIComponent(agentKey));
+    if(r.status === 401){
+      document.getElementById('login-err').style.display='block';
+      agentKey = '';
+      return;
+    }
+    allLeads = await r.json();
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='flex';
+    renderLeads();
+    updateStats();
+  }catch(e){
+    document.getElementById('login-err').style.display='block';
+    document.getElementById('login-err').textContent='שגיאת חיבור לשרת';
+  }
+}
+
+// ── Filter ──
+function filterBy(f){
+  currentFilter = f;
+  renderLeads();
+}
+
+// ── Stats ──
+function updateStats(){
+  document.getElementById('cnt-all').textContent = allLeads.length;
+  document.getElementById('cnt-new').textContent = allLeads.filter(l=>l.status==='new').length;
+  document.getElementById('cnt-contact').textContent = allLeads.filter(l=>l.status==='contact').length;
+  document.getElementById('cnt-done').textContent = allLeads.filter(l=>l.status==='done').length;
+  document.getElementById('cnt-lost').textContent = allLeads.filter(l=>l.status==='lost').length;
+}
+
+// ── Render leads ──
+function renderLeads(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  let list = allLeads;
+  if(currentFilter !== 'all') list = list.filter(l => l.status === currentFilter);
+  if(q) list = list.filter(l =>
+    (l.name||'').toLowerCase().includes(q) ||
+    (l.phone||'').includes(q) ||
+    (l.pest||'').toLowerCase().includes(q) ||
+    (l.property||'').toLowerCase().includes(q)
+  );
+  const el = document.getElementById('leads-list');
+  if(list.length === 0){
+    el.innerHTML = '<div class="empty-state"><div>📋</div>אין לידים להציג</div>';
+    return;
+  }
+  el.innerHTML = list.map(l => {
+    const st = STATUS_LABELS[l.status] || STATUS_LABELS.new;
+    const dt = l.timestamp ? new Date(l.timestamp).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    const hasNotes = l.notes && l.notes.trim();
+    return `<div class="lead-card${selectedLead && selectedLead.id===l.id?' selected':''}" onclick="openLead('${l.id}')">
+      <div class="lc-top">
+        <div class="lc-name">${l.name || '—'}</div>
+        <span class="lc-badge ${st.cls}">${st.text}</span>
+      </div>
+      <div class="lc-mid">
+        <span class="lc-pest">${l.pest||'—'}</span>
+        <span>${l.property||''}</span>
+        ${l.chosenTime ? '<span>📅 '+l.chosenTime+'</span>' : ''}
+      </div>
+      <div class="lc-time">${l.phone||''} ${dt ? '· '+dt : ''}</div>
+      ${hasNotes ? `<div class="lc-notes has-notes">📝 ${l.notes}</div>` : ''}
+      <div class="lc-actions">
+        <a class="lc-btn btn-call" href="tel:${l.phone||''}" onclick="e=>e.stopPropagation()">📞 חייג</a>
+        <a class="lc-btn btn-wa" href="https://wa.me/972${(l.phone||'').slice(1)}?text=${encodeURIComponent('שלום '+(l.name||'')+', שלומי מאביה הדברות. התקשרתי בנוגע לפגישה שקבענו.')}" target="_blank" onclick="e=>e.stopPropagation()">📲 WhatsApp</a>
+        <button class="lc-btn btn-status" onclick="quickStatus(event,'${l.id}')">✏️ סטטוס</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Quick status cycle ──
+function quickStatus(e, id){
+  e.stopPropagation();
+  const order = ['new','contact','done','lost'];
+  const lead = allLeads.find(l=>l.id===id);
+  if(!lead) return;
+  const next = order[(order.indexOf(lead.status)+1) % order.length];
+  lead.status = next;
+  updateLeadRemote(id, { status: next });
+  renderLeads();
+  updateStats();
+}
+
+// ── Open lead detail ──
+function openLead(id){
+  const lead = allLeads.find(l=>l.id===id);
+  if(!lead) return;
+  selectedLead = lead;
+  renderLeads();
+
+  document.getElementById('m-name').textContent = lead.name || '—';
+  document.getElementById('m-time').textContent = lead.chosenTime || '';
+  document.getElementById('m-phone').textContent = lead.phone || '—';
+  document.getElementById('m-pest').textContent = lead.pest || '—';
+  document.getElementById('m-property').textContent = lead.property || '—';
+
+  const petsRow = document.getElementById('m-pets-row');
+  if(lead.pets && !lead.pets.includes('אין')){ petsRow.style.display='flex'; document.getElementById('m-pets').textContent=lead.pets; }
+  else petsRow.style.display='none';
+
+  const childRow = document.getElementById('m-children-row');
+  if(lead.children && !lead.children.includes('אין')){ childRow.style.display='flex'; document.getElementById('m-children').textContent=lead.children; }
+  else childRow.style.display='none';
+
+  const recRow = document.getElementById('m-rec-row');
+  if(lead.recurring && lead.recurring !== 'לא בטוח'){ recRow.style.display='flex'; document.getElementById('m-rec').textContent=lead.recurring; }
+  else recRow.style.display='none';
+
+  const dt = lead.timestamp ? new Date(lead.timestamp).toLocaleString('he-IL') : '';
+  document.getElementById('m-date').textContent = dt;
+
+  document.getElementById('m-call-btn').href = 'tel:' + (lead.phone||'');
+  document.getElementById('m-wa-btn').href = `https://wa.me/972${(lead.phone||'').slice(1)}?text=${encodeURIComponent('שלום '+(lead.name||'')+', שלומי מאביה הדברות. בנוגע לפגישה שקבענו ל-'+lead.chosenTime+'.')}`;
+
+  // Prep
+  const prepWrap = document.getElementById('m-prep-wrap');
+  const prepData = PREP[lead.pest];
+  if(prepData){ prepWrap.style.display='block'; document.getElementById('m-prep-text').textContent=prepData; }
+  else prepWrap.style.display='none';
+
+  document.getElementById('m-status').value = lead.status || 'new';
+  document.getElementById('m-notes').value = lead.notes || '';
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal(e){ if(e.target===document.getElementById('modal')) closeModalDirect(); }
+function closeModalDirect(){ document.getElementById('modal').classList.remove('open'); selectedLead=null; renderLeads(); }
+
+async function saveLead(){
+  if(!selectedLead) return;
+  const status = document.getElementById('m-status').value;
+  const notes = document.getElementById('m-notes').value;
+  selectedLead.status = status;
+  selectedLead.notes = notes;
+  await updateLeadRemote(selectedLead.id, { status, notes });
+  renderLeads();
+  updateStats();
+  closeModalDirect();
+}
+
+async function updateLeadRemote(id, data){
+  try{
+    await fetch(SERVER+'/api/lead/update?key='+encodeURIComponent(agentKey),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ id, ...data })
+    });
+  }catch(e){}
+}
+
+// ── View toggle ──
+function showView(v){
+  document.getElementById('btn-leads').classList.toggle('active', v==='leads');
+  document.getElementById('btn-stats-v').classList.toggle('active', v==='statsview');
+  if(v==='statsview') showStatsView();
+}
+
+function showStatsView(){
+  const el = document.getElementById('leads-list');
+  const pestCount = {};
+  const statusCount = {};
+  allLeads.forEach(l => {
+    if(l.pest) pestCount[l.pest] = (pestCount[l.pest]||0)+1;
+    statusCount[l.status||'new'] = (statusCount[l.status||'new']||0)+1;
+  });
+  const pestRows = Object.entries(pestCount).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+    <div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)">
+      <span>${k}</span><strong>${v}</strong>
+    </div>`).join('');
+  const total = allLeads.length || 1;
+  const convRate = Math.round((statusCount.done||0)/total*100);
+  el.innerHTML = `<div style="background:white;border-radius:14px;padding:18px;border:1.5px solid var(--border)">
+    <div style="font-weight:700;font-size:1rem;color:var(--g2);margin-bottom:14px">📊 תובנות עסקיות</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <div style="background:var(--g5);border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--g2)">${convRate}%</div>
+        <div style="font-size:.75rem;color:var(--gray)">אחוז סגירה</div>
+      </div>
+      <div style="background:#fffbeb;border-radius:12px;padding:14px;text-align:center">
+        <div style="font-size:2rem;font-weight:800;color:var(--contact)">${statusCount.contact||0}</div>
+        <div style="font-size:.75rem;color:var(--gray)">ממתינים למעקב</div>
+      </div>
+    </div>
+    <div style="font-weight:700;font-size:.9rem;color:var(--g2);margin-bottom:10px">לידים לפי מזיק</div>
+    ${pestRows || '<div style="color:var(--gray);font-size:.85rem">אין נתונים</div>'}
+  </div>`;
+}
+
+// ── AI Chat ──
+function openAI(){ document.getElementById('ai-overlay').classList.add('open'); }
+function closeAI(e){ if(e.target===document.getElementById('ai-overlay')) closeAIDirect(); }
+function closeAIDirect(){ document.getElementById('ai-overlay').classList.remove('open'); }
+
+document.getElementById('ai-inp').addEventListener('keydown', e=>{ if(e.key==='Enter') aiSend(); });
+
+async function aiSend(pretext){
+  const inp = document.getElementById('ai-inp');
+  const txt = (pretext || inp.value).trim();
+  if(!txt) return;
+  inp.value = '';
+
+  addAIMsg(txt, 'user');
+
+  // Build context of all leads
+  const summary = allLeads.slice(0,50).map(l=>
+    `[${l.id}] ${l.name} | ${l.phone} | ${l.pest} — ${l.property} | ${l.chosenTime} | סטטוס: ${STATUS_LABELS[l.status||'new'].text}${l.notes?(' | הערות: '+l.notes):''}`
+  ).join('\n');
+
+  const today = new Date().toLocaleDateString('he-IL',{weekday:'long',day:'numeric',month:'long'});
+  const sys = `אתה עוזר AI אישי של שלומי לוי, מדביר מוסמך ובעלים של אביה הדברות.
+היום: ${today}
+סה"כ לידים: ${allLeads.length}
+
+רשימת לידים (עד 50 אחרונים):
+${summary || 'אין לידים עדיין'}
+
+הנחיות:
+- ענה בעברית מדוברת, קצרה ועניינית
+- שלומי עסוק — תהיה ממוקד
+- כשמדובר בהודעת מעקב — כתוב אותה מוכנה לשליחה
+- אל תמציא נתונים שלא קיימים ברשימה
+- אם שואל על לידים ספציפיים — ציין שם וטלפון`;
+
+  const loadId = addAIMsg('...', 'loading');
+
+  try{
+    aiHistory.push({ role:'user', content: txt });
+    const r = await fetch(SERVER+'/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:800,
+        system: sys,
+        messages: aiHistory.slice(-10)
+      })
+    });
+    const data = await r.json();
+    const reply = data.content?.[0]?.text || 'לא הצלחתי להשיב, נסה שוב.';
+    aiHistory.push({ role:'assistant', content: reply });
+    replaceAIMsg(loadId, reply, 'bot');
+  }catch(e){
+    replaceAIMsg(loadId, 'שגיאת חיבור. נסה שוב.', 'bot');
+  }
+}
+
+let msgId = 0;
+function addAIMsg(txt, type){
+  const id = 'aim-'+(++msgId);
+  const el = document.getElementById('ai-msgs');
+  const d = document.createElement('div');
+  d.className = 'ai-msg ' + type;
+  d.id = id;
+  d.textContent = txt;
+  el.appendChild(d);
+  el.scrollTop = el.scrollHeight;
+  return id;
+}
+
+function replaceAIMsg(id, txt, type){
+  const el = document.getElementById(id);
+  if(el){ el.className = 'ai-msg ' + type; el.textContent = txt; }
+  document.getElementById('ai-msgs').scrollTop = 99999;
+}
+</script>
+</body>
+</html>
